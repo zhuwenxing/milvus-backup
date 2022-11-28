@@ -243,34 +243,58 @@ class TestcaseBase(Base):
             assert collection_w.num_entities == nb_of_segment * (i + 1)
         return collection_w
 
-    def prepare_data(self, name=None, nb=ct.default_nb, dim=ct.default_dim):
+    def prepare_data(self, name=None, nb=ct.default_nb, dim=ct.default_dim, is_binary=False, auto_id=False, primary_field=ct.default_int64_field_name):
         """
         prepare data for test case
         """
         self._connect()
         prefix = "backup_e2e_"
         name = cf.gen_unique_str(prefix) if name is None else name
-        collection_w = self.init_collection_wrap(name=name, active_trace=True)
+        default_schema = cf.gen_default_collection_schema(auto_id=auto_id, dim=dim, primary_field=primary_field)
+        if is_binary:
+            default_schema = cf.gen_default_binary_collection_schema(auto_id=auto_id, dim=dim,
+                                                                     primary_field=primary_field)
+        collection_w = self.init_collection_wrap(name=name, schema=default_schema, active_trace=True)
         assert collection_w.name == name
         collection_w.flush(timeout=180)
-        data = cf.gen_default_list_data(nb=nb, dim=dim)
-        _, res = collection_w.insert(data)
+        cf.insert_data(collection_w, nb, is_binary, dim=dim)
         collection_w.flush(timeout=180)
-        index_params = ct.default_index
-        collection_w.create_index(field_name=ct.default_float_vec_field_name,
-                                  index_params=index_params,
-                                  index_name=cf.gen_unique_str())
+        if is_binary:
+            collection_w.create_index(ct.default_binary_vec_field_name, ct.default_bin_flat_index, index_name=cf.gen_unique_str())
+        else:
+            collection_w.create_index(ct.default_float_vec_field_name, ct.default_flat_index, index_name=cf.gen_unique_str())
+
         collection_w.create_index(field_name=ct.default_string_field_name,
                                   index_params={},
                                   index_name=cf.gen_unique_str())
         collection_w.load()
-        search_vectors = cf.gen_vectors(5, ct.default_dim)
-        search_params = ct.default_search_params
+        if is_binary:
+            search_raw_vector, search_vectors = cf.gen_binary_vectors(5, ct.default_dim)
+            search_params = ct.default_search_binary_params
+            search_field = ct.default_binary_vec_field_name
+        else:
+            search_vectors = cf.gen_vectors(5, ct.default_dim)
+            search_params = ct.default_search_params
+            search_field = ct.default_float_vec_field_name
         collection_w.search(data=search_vectors,
-                            anns_field=ct.default_float_vec_field_name,
+                            anns_field=search_field,
                             param=search_params, limit=5)
         term_expr = f'{ct.default_int64_field_name} in [1001,1201,4999,2999]'
         res, _ = collection_w.query(term_expr)
 
-    def verify_data(self):
-        pass
+    def verify_data(self, name=None, nb=ct.default_nb, dim=ct.default_dim, is_binary=False):
+        collection_w, _ = self.collection_wrap.init_collection(name=name)
+        collection_w.load()
+        if is_binary:
+            search_raw_vector, search_vectors = cf.gen_binary_vectors(5, ct.default_dim)
+            search_params = ct.default_search_binary_params
+            search_field = ct.default_binary_vec_field_name
+        else:
+            search_vectors = cf.gen_vectors(5, ct.default_dim)
+            search_params = ct.default_search_params
+            search_field = ct.default_float_vec_field_name
+        collection_w.search(data=search_vectors,
+                            anns_field=search_field,
+                            param=search_params, limit=5)
+        term_expr = f'{ct.default_int64_field_name} in [1001,1201,4999,2999]'
+        res, _ = collection_w.query(term_expr)
