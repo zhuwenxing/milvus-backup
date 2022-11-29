@@ -8,7 +8,7 @@ from common.common_type import CaseLabel
 from utils.util_log import test_log as log
 from api.milvus_backup import MilvusBackupClient
 
-c_name_prefix = "e2e"
+c_name_prefix = "e2e_backup"
 backup_prefix = "backup"
 
 client = MilvusBackupClient("http://localhost:8080/api/v1")
@@ -42,7 +42,7 @@ class TestE2e(TestcaseBase):
         log.info(f"restore_backup: {res}")
         res, _ = self.utility_wrap.list_collections()
         assert name_origin + suffix in res
-        client.delete_backup(back_up_name)
+        res = client.delete_backup(back_up_name)
         res = client.list_backup()
         all_backup = [r["name"] for r in res["data"]]
         assert back_up_name not in all_backup
