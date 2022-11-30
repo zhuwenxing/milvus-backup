@@ -31,7 +31,11 @@ class TestE2e(TestcaseBase):
         res = client.create_backup({"async": False, "backup_name": back_up_name, "collection_names": [name_origin]})
         log.info(f"create_backup {res}")
         res = client.list_backup()
-        all_backup = [r["name"] for r in res["data"]]
+        log.info(f"list_backup {res}")
+        if "data" in res:
+            all_backup = [r["name"] for r in res["data"]]
+        else:
+            all_backup = []
         assert back_up_name in all_backup
         backup = client.get_backup(back_up_name)
         assert backup["data"]["name"] == back_up_name
@@ -44,5 +48,8 @@ class TestE2e(TestcaseBase):
         assert name_origin + suffix in res
         res = client.delete_backup(back_up_name)
         res = client.list_backup()
-        all_backup = [r["name"] for r in res["data"]]
+        if "data" in res:
+            all_backup = [r["name"] for r in res["data"]]
+        else:
+            all_backup = []
         assert back_up_name not in all_backup

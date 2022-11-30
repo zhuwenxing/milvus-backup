@@ -14,12 +14,12 @@ suffix = "_bak"
 client = MilvusBackupClient("http://localhost:8080/api/v1")
 
 
-class TestCreateBackup(TestcaseBase):
+class TestDeleteBackup(TestcaseBase):
     """ Test case of end to end"""
     @pytest.mark.tags(CaseLabel.L1)
     @pytest.mark.parametrize("is_async", [True, False])
     @pytest.mark.parametrize("backup_num", [1, 2, 3])
-    def test_milvus_create_backup_with_different_type(self, backup_num, is_async):
+    def test_milvus_delete_backup(self, backup_num, is_async):
         # prepare data
         names_origin = [cf.gen_unique_str(prefix)]
         for name in names_origin:
@@ -42,7 +42,10 @@ class TestCreateBackup(TestcaseBase):
                 assert res is True
 
         res = client.list_backup()
-        all_backup = [r["name"] for r in res["data"]]
+        if "data" in res:
+            all_backup = [r["name"] for r in res["data"]]
+        else:
+            all_backup = []
         assert set(back_up_names).issubset(set(all_backup))
         # delete backup
         for back_up_name in back_up_names:

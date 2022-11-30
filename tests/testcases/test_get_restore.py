@@ -14,12 +14,12 @@ suffix = "_bak"
 client = MilvusBackupClient("http://localhost:8080/api/v1")
 
 
-class TestCreateBackup(TestcaseBase):
+class TestGetRestore(TestcaseBase):
     """ Test case of end to end"""
     @pytest.mark.tags(CaseLabel.L1)
     @pytest.mark.parametrize("is_async", [True, False])
     @pytest.mark.parametrize("restore_num", [1, 2, 3])
-    def test_milvus_create_backup_with_different_type(self,restore_num, is_async):
+    def test_milvus_get_restore(self, restore_num, is_async):
         # prepare data
         back_up_name = cf.gen_unique_str(backup_prefix)
         names_origin = [cf.gen_unique_str(prefix)]
@@ -36,15 +36,14 @@ class TestCreateBackup(TestcaseBase):
         log.info(f"create backup response: {res}")
         backup = client.get_backup(back_up_name)
         assert backup["data"]["name"] == back_up_name
-        backup_collections = [backup["collection_name"]for backup in backup["data"]["collection_backups"]]
-        restore_collections = backup_collections
         restore_ids = []
         for i in range(restore_num):
             restore_collections = names_need_backup
             payload = {"async": False, "backup_name": back_up_name,
-                       "collection_suffix": suffix, "collection_names": restore_collections}
+                       "collection_suffix": suffix+str(i), "collection_names": restore_collections}
             t0 = time.time()
             res = client.restore_backup(payload)
+            log.info(f"restore backup response: {res}")
             restore_id = res["data"]["id"]
             restore_ids.append(restore_id)
             log.info(f"restore_backup: {res}")

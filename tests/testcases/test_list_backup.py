@@ -12,12 +12,12 @@ suffix = "_bak"
 client = MilvusBackupClient("http://localhost:8080/api/v1")
 
 
-class TestCreateBackup(TestcaseBase):
+class TestListBackup(TestcaseBase):
     """ Test case of end to end"""
     @pytest.mark.tags(CaseLabel.L1)
     @pytest.mark.parametrize("is_async", [True, False])
     @pytest.mark.parametrize("backup_num", [1, 2, 3])
-    def test_milvus_get_backup(self, backup_num, is_async):
+    def test_milvus_list_backup(self, backup_num, is_async):
         # prepare data
         names_origin = [cf.gen_unique_str(prefix)]
         back_up_names = [cf.gen_unique_str(backup_prefix) for i in range(backup_num)]
@@ -36,7 +36,10 @@ class TestCreateBackup(TestcaseBase):
                 res = client.wait_create_backup_complete(back_up_name)
                 assert res is True
         res = client.list_backup()
-        all_backup = [r["name"] for r in res["data"]]
+        if "data" in res:
+            all_backup = [r["name"] for r in res["data"]]
+        else:
+            all_backup = []
         assert set(back_up_names).issubset(all_backup)
 
 

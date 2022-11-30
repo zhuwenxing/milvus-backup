@@ -14,13 +14,13 @@ suffix = "_bak"
 client = MilvusBackupClient("http://localhost:8080/api/v1")
 
 
-class TestCreateBackup(TestcaseBase):
+class TestRestoreBackup(TestcaseBase):
     """ Test case of end to end"""
     @pytest.mark.tags(CaseLabel.L1)
     @pytest.mark.parametrize("is_async", [True, False])
     @pytest.mark.parametrize("collection_need_to_restore", [1, 2, 3, "all"])
     @pytest.mark.parametrize("collection_type", ["binary", "float", "all"])
-    def test_milvus_create_backup_with_different_type(self, collection_type, collection_need_to_restore, is_async):
+    def test_milvus_restore_back(self, collection_type, collection_need_to_restore, is_async):
         # prepare data
         names_origin = []
         back_up_name = cf.gen_unique_str(backup_prefix)

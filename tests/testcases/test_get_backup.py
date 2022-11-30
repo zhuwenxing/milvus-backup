@@ -12,7 +12,7 @@ suffix = "_bak"
 client = MilvusBackupClient("http://localhost:8080/api/v1")
 
 
-class TestCreateBackup(TestcaseBase):
+class TestGetBackup(TestcaseBase):
     """ Test case of end to end"""
     @pytest.mark.tags(CaseLabel.L1)
     @pytest.mark.parametrize("is_async", [True, False])

@@ -20,7 +20,7 @@ class TestCreateBackup(TestcaseBase):
     @pytest.mark.parametrize("is_async", [True, False])
     @pytest.mark.parametrize("collection_need_to_backup", [1, 2, 3, "all"])
     @pytest.mark.parametrize("collection_type", ["binary", "float", "all"])
-    def test_milvus_create_backup_with_different_type(self, collection_type, collection_need_to_backup, is_async):
+    def test_milvus_create_backup(self, collection_type, collection_need_to_backup, is_async):
         # prepare data
         names_origin = []
         back_up_name = cf.gen_unique_str(backup_prefix)
@@ -54,12 +54,15 @@ class TestCreateBackup(TestcaseBase):
             res = client.wait_create_backup_complete(back_up_name)
             assert res is True
         res = client.list_backup()
-        all_backup = [r["name"] for r in res["data"]]
+        if "data" in res:
+            all_backup = [r["name"] for r in res["data"]]
+        else:
+            all_backup = []
         assert back_up_name in all_backup
         backup = client.get_backup(back_up_name)
         assert backup["data"]["name"] == back_up_name
         backup_collections = [backup["collection_name"]for backup in backup["data"]["collection_backups"]]
-        if collection_need_to_backup.isdigit():
+        if isinstance(collection_need_to_backup, int):
             assert len(backup_collections) == collection_need_to_backup
         assert set(names_to_backup).issubset(backup_collections)
 
