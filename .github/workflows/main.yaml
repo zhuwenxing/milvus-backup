@@ -104,7 +104,7 @@ jobs:
       - name: Save Backup
         uses: actions/cache@v3
         with:
-          path: deployment/${{ matrix.milvus_mode }}/volumes/minio/a-bucket/backup
+          path: ./deployment/${{ matrix.milvus_mode }}/volumes/minio/a-bucket/backup
           key: ${{ matrix.milvus_mode }}-backup-${{ github.run_id }}
           restore-keys: |
             ${{ matrix.milvus_mode }}-backup-
@@ -165,7 +165,7 @@ jobs:
       - name: Download backup
         uses: actions/cache@v3
         with:
-          path: deployment/${{ matrix.milvus_mode }}/volumes/minio/a-bucket/backup
+          path: ./deployment/${{ matrix.milvus_mode }}/volumes/minio/a-bucket/backup
           key: ${{ matrix.milvus_mode }}-backup-${{ github.run_id }}
           restore-keys: |
             ${{ matrix.milvus_mode }}-backup-
