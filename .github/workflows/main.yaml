@@ -90,6 +90,12 @@ jobs:
           ./milvus-backup list
           ./milvus-backup create -n my_backup
           ./milvus-backup list
+      - name: List backup
+        timeout-minutes: 5
+        working-directory: deployment/${{ matrix.milvus_mode }}/volumes/minio
+        shell: bash
+        run: |
+          ls -l 
       - name: Restore backup
         timeout-minutes: 5
         shell: bash
