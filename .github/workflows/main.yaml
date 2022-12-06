@@ -110,12 +110,10 @@ jobs:
           python example/verify_data.py
       
       - name: Save Backup
-        uses: actions/cache@v3
+        uses: actions/upload-artifact@v2
         with:
-          path: /home/runner/work/milvus-backup/milvus-backup/deployment/${{ matrix.milvus_mode }}/volumes/minio/a-bucket/backup
-          key: ${{ matrix.milvus_mode }}-backup-${{ github.run_id }}
-          restore-keys: |
-            ${{ matrix.milvus_mode }}-backup-
+          name: ${{ matrix.milvus_mode }}-backup
+          path: deployment/${{ matrix.milvus_mode }}/volumes/minio/a-bucket/backup
             
 
       - name: delete backup
@@ -171,12 +169,10 @@ jobs:
           bash ../../scripts/check_healthy.sh
           docker-compose ps -a
       - name: Download backup
-        uses: actions/cache@v3
+        uses: actions/download-artifact@v2
         with:
-          path: /home/runner/work/milvus-backup/milvus-backup/deployment/${{ matrix.milvus_mode }}/volumes/minio/a-bucket/backup
-          key: ${{ matrix.milvus_mode }}-backup-${{ github.run_id }}
-          restore-keys: |
-            ${{ matrix.milvus_mode }}-backup-
+          name: ${{ matrix.milvus_mode }}-backup
+          path: deployment/${{ matrix.milvus_mode }}/volumes/minio/a-bucket/backup
       - name: Backup
         timeout-minutes: 5
         shell: bash
