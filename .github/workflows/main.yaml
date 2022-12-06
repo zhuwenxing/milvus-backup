@@ -145,7 +145,7 @@ jobs:
         shell: bash
         run: |
           sudo mkdir -p deployment/${{ matrix.milvus_mode }}/volumes/minio/a-bucket/backup
-          sudo cp -r ${{ matrix.milvus_mode }}-backup deployment/${{ matrix.milvus_mode }}/volumes/minio/a-bucket/backup
+          sudo cp -r ${{ matrix.milvus_mode }}-backup/my_backup deployment/${{ matrix.milvus_mode }}/volumes/minio/a-bucket/backup
       
       - name: List backup from another Milvus
         timeout-minutes: 5
