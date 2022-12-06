@@ -95,7 +95,9 @@ jobs:
         working-directory: deployment/${{ matrix.milvus_mode }}/volumes/minio
         shell: bash
         run: |
-          ls -l 
+          pwd
+          ls -l
+          tree
       - name: Restore backup
         timeout-minutes: 5
         shell: bash
