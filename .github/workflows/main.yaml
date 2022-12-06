@@ -36,7 +36,7 @@ jobs:
       fail-fast: false
       matrix:
         deploy_tools: [docker-compose]
-        milvus_mode: [standalone, cluster]
+        milvus_mode: [standalone]
         # mq_type: [pulsar, kafka]  # TODO: add pulsar and kafka
     
     steps:
@@ -99,7 +99,14 @@ jobs:
         timeout-minutes: 5
         shell: bash
         run: |
-          python example/verify_data.py         
+          python example/verify_data.py
+      
+      - name: Save Backup
+        uses: actions/cache@v3
+        with:
+          path: deployment/${{ matrix.milvus_mode }}/volumes/minio/a-bucket/backup
+          key: ${{ matrix.milvus_mode }}-backup-${{ github.run_id }}
+            
 
       - name: delete backup
         timeout-minutes: 5
@@ -107,16 +114,15 @@ jobs:
         run: |
           ./milvus-backup delete -n my_backup
           ./milvus-backup list
-
-  test-backup-restore-api:
+  
+  test-restore-from-another-milvus:
     runs-on: ubuntu-latest
+    needs: test-backup-restore-cli
     strategy:
       fail-fast: false
       matrix:
         deploy_tools: [docker-compose]
-        milvus_mode: [standalone, cluster]
-        # mq_type: [pulsar, kafka]  # TODO: add pulsar and kafka
-
+        milvus_mode: [standalone]
     steps:
       - uses: actions/checkout@v3
 
@@ -130,7 +136,7 @@ jobs:
         with:
           go-version: '1.18.0'
           cache: true
-
+      
       - name: Build
         timeout-minutes: 5
         shell: bash
@@ -138,15 +144,15 @@ jobs:
           go get
           go build
       - name: Install dependency
-
+        
         timeout-minutes: 5
         working-directory: tests
         shell: bash
         run: |
           pip install -r requirements.txt --trusted-host https://test.pypi.org
-
+          
       - name: Milvus deploy
-
+        
         timeout-minutes: 15
         shell: bash
         working-directory: deployment/${{ matrix.milvus_mode }}
@@ -154,27 +160,95 @@ jobs:
           docker-compose up -d
           bash ../../scripts/check_healthy.sh
           docker-compose ps -a
-
-      - name: Start server
+      - name: Download backup
+        uses: actions/cache@v3
+        with:
+          path: deployment/${{ matrix.milvus_mode }}/volumes/minio/a-bucket/backup
+          key: ${{ matrix.milvus_mode }}-backup-${{ github.run_id }}
+      - name: Backup
         timeout-minutes: 5
         shell: bash
         run: |
-          ./milvus-backup server > server.log 2>&1 &
-
-      - name: Run test
-        timeout-minutes: 60
+          ./milvus-backup list
+      - name: Restore backup
+        timeout-minutes: 5
         shell: bash
-        working-directory: tests
         run: |
-          pytest -s -v --tags L0 L1
+          ./milvus-backup restore -n my_backup -s _recover
+      - name: Verify data
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          python example/verify_data.py      
+      
+    
+  # test-backup-restore-api:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       deploy_tools: [docker-compose]
+  #       milvus_mode: [standalone, cluster]
+  #       # mq_type: [pulsar, kafka]  # TODO: add pulsar and kafka
 
-      - name: Upload logs
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: logs-${{ matrix.milvus_mode }}
-          path: |
-            server.log
-            /tmp/ci_logs
+  #   steps:
+  #     - uses: actions/checkout@v3
+
+  #     - name: Set up Python 3.8
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: 3.8
+  #         cache: pip
+
+  #     - uses: actions/setup-go@v3
+  #       with:
+  #         go-version: '1.18.0'
+  #         cache: true
+
+  #     - name: Build
+  #       timeout-minutes: 5
+  #       shell: bash
+  #       run: |
+  #         go get
+  #         go build
+  #     - name: Install dependency
+
+  #       timeout-minutes: 5
+  #       working-directory: tests
+  #       shell: bash
+  #       run: |
+  #         pip install -r requirements.txt --trusted-host https://test.pypi.org
+
+  #     - name: Milvus deploy
+
+  #       timeout-minutes: 15
+  #       shell: bash
+  #       working-directory: deployment/${{ matrix.milvus_mode }}
+  #       run: |
+  #         docker-compose up -d
+  #         bash ../../scripts/check_healthy.sh
+  #         docker-compose ps -a
+
+  #     - name: Start server
+  #       timeout-minutes: 5
+  #       shell: bash
+  #       run: |
+  #         ./milvus-backup server > server.log 2>&1 &
+
+  #     - name: Run test
+  #       timeout-minutes: 60
+  #       shell: bash
+  #       working-directory: tests
+  #       run: |
+  #         pytest -s -v --tags L0 L1
+
+  #     - name: Upload logs
+  #       if: always()
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: logs-${{ matrix.milvus_mode }}
+  #         path: |
+  #           server.log
+  #           /tmp/ci_logs
 
 
