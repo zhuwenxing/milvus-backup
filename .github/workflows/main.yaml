@@ -146,6 +146,15 @@ jobs:
         run: |
           sudo mkdir -p deployment/${{ matrix.milvus_mode }}/volumes/minio/a-bucket/backup
           sudo cp -r ${{ matrix.milvus_mode }}-backup deployment/${{ matrix.milvus_mode }}/volumes/minio/a-bucket/backup
+      
+      - name: List backup from another Milvus
+        timeout-minutes: 5
+        working-directory: deployment/${{ matrix.milvus_mode }}/volumes/minio
+        shell: bash
+        run: |
+          pwd
+          ls -l
+          tree
       - name: Restore backup from another Milvus
         timeout-minutes: 5
         shell: bash
