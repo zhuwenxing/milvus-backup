@@ -216,7 +216,8 @@ jobs:
         shell: bash
         working-directory: tests
         run: |
-          pytest -s -v --tags L0 L1
+          pytest -s -v --tags L0 L1 test_create_backup.py 
+          pytest -s -v -n 4 --tags L0 L1 --ignore test_create_backup.py
 
       - name: Upload logs
         if: always()
