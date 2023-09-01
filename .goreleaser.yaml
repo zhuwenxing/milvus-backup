@@ -12,9 +12,9 @@ builds:
       - darwin
     ldflags:
       - -w -s
-      - -X ./cmd/version.version={{.Version}}
-      - -X ./cmd/version.gitcommit={{.Commit}}
-      - -X ./cmd/version.buildtime={{.Timestamp}}
+      - -X github.com/zhuwenxing/milvus-backup/cmd/version.version={{.Version}}
+      - -X github.com/zhuwenxing/milvus-backup/cmd/version.gitcommit={{.Commit}}
+      - -X github.com/zhuwenxing/milvus-backup/cmd/version.buildtime={{.Timestamp}}
 
 archives:
   - format: tar.gz
