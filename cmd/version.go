@@ -2,16 +2,22 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
-const Version = "1.0-beta"
+var version = "1.0-beta"
+var gitcommit = "unknown"
+var buildtime = "unknown"
+
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "print the version of Milvus backup tool",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(fmt.Sprintf("Version: %s", Version))
+		fmt.Printf("Bytebase version: %s\n", version)
+		fmt.Printf("Git commit hash: %s\n", gitcommit)
+		fmt.Printf("Built on: %s\n", buildtime)
 	},
 }
 
