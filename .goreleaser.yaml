@@ -25,6 +25,15 @@ checksum:
   name_template: 'checksums.txt'
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
+
+brews:
+  -
+    name: milvus-backup
+    homepage: "https://github.com/zilliztech/milvus-backup"
+    tap:
+      owner: zhuwenxing
+      name: homebrew-tap
+
 changelog:
   sort: asc
   use: github
