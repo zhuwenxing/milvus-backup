@@ -15,7 +15,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "print the version of Milvus backup tool",
 	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Printf("Bytebase version: %s\n", version)
+		fmt.Printf("Milvus backup version: %s\n", version)
 		fmt.Printf("Git commit hash: %s\n", gitcommit)
 		fmt.Printf("Built on: %s\n", buildtime)
 	},
