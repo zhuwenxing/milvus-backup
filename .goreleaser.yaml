@@ -13,8 +13,8 @@ builds:
     ldflags:
       - -w -s
       - -X main.version={{ .Version }}
-      - -X main.gitcommit={{ .Commit }}
-      - -X main.buildtime={{ .Timestamp }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .Timestamp }}
 
 archives:
   - format: tar.gz
