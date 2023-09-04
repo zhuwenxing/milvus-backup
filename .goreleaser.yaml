@@ -14,7 +14,7 @@ builds:
       - -w -s
       - -X main.version={{ .Version }}
       - -X main.commit={{ .Commit }}
-      - -X main.date={{ .Timestamp }}
+      - -X main.date={{ .Date }}
 
 archives:
   - format: tar.gz
