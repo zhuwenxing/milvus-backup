@@ -12,9 +12,9 @@ builds:
       - darwin
     ldflags:
       - -w -s
-      - -X github.com/zhuwenxing/milvus-backup/cmd/version.version={{ .Version }}
-      - -X github.com/zhuwenxing/milvus-backup/cmd/version.gitcommit={{ .Commit }}
-      - -X github.com/zhuwenxing/milvus-backup/cmd/version.buildtime={{ .Timestamp }}
+      - -X main.version={{ .Version }}
+      - -X main.gitcommit={{ .Commit }}
+      - -X main.buildtime={{ .Timestamp }}
 
 archives:
   - format: tar.gz
@@ -31,13 +31,7 @@ checksum:
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
 
-brews:
-  -
-    name: milvus-backup
-    homepage: "https://github.com/zilliztech/milvus-backup"
-    tap:
-      owner: zhuwenxing
-      name: homebrew-tap
+
 
 changelog:
   sort: asc
