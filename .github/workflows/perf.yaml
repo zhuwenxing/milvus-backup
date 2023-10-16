@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-backup-restore-api:
+  test-perf:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
