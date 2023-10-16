@@ -100,7 +100,7 @@ jobs:
         shell: bash
         working-directory: tests
         run: |
-          pytest -s -v --tags Perf --log-cli-level=INFO --capture=no --benchmark-json output.json
+          pytest -s -v --tags Perf --capture=no --benchmark-json output.json
 
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
