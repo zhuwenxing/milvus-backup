@@ -101,6 +101,13 @@ jobs:
         working-directory: tests
         run: |
           pytest -s -v testcases/test_perf.py --benchmark-json output.json
+ 
+
+      - name: Git stash
+        if: ${{ always() }}
+        run: |
+          git stash
+          git stash clear  
 
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
