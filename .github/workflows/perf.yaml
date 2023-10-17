@@ -122,6 +122,7 @@ jobs:
           comment-always: true
           alert-threshold: '200%'
           comment-on-alert: true
+          summary-always: true
           fail-on-alert: true
           alert-comment-cc-users: '@zhuwenxing'
 
