@@ -124,7 +124,7 @@ jobs:
           comment-on-alert: true
           summary-always: true
           fail-on-alert: true
-          alert-comment-cc-users: '@zhuwenxing'
+          alert-comment-cc-users: '@github-actions'
 
       - name: Get Milvus status
         shell: bash
