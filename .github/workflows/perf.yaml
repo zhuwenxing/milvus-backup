@@ -15,14 +15,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-backup-restore-api:
+  test-perf:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         deploy_tools: [docker-compose]
         milvus_mode: [standalone]
-        milvus_version: [master-latest, 2.3.0-latest, 2.2.0-latest]
+        milvus_version: [master-latest]
 
     steps:
       - uses: actions/checkout@v3
@@ -100,7 +100,14 @@ jobs:
         shell: bash
         working-directory: tests
         run: |
-          pytest -s -v --tags Perf --capture=no --benchmark-json output.json
+          pytest -s -v testcases/test_perf.py --benchmark-json output.json
+ 
+
+      - name: Git stash
+        if: ${{ always() }}
+        run: |
+          git stash
+          git stash clear  
 
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
