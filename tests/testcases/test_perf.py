@@ -57,13 +57,13 @@ class TestPerf(TestcaseBase):
         log.info(f"create backup time: {t1 - t0} with {res}, {result}")
         return res, result
 
-    @pytest.mark.parametrize("nb", [10000])
+    @pytest.mark.parametrize("nb", [100000])
     def test_milvus_create_backup_perf(self, benchmark, nb):
         self.setup_perf(nb=nb)
         res, result = benchmark.pedantic(self.backup_perf, iterations=1, rounds=5)
         assert result is True
 
-    @pytest.mark.parametrize("nb", [10000])
+    @pytest.mark.parametrize("nb", [100000])
     def test_milvus_restore_backup_perf(self, benchmark, nb):
         self.setup_perf(nb=nb)
         res, result = benchmark.pedantic(self.restore_perf, setup=self.setup_perf, iterations=1, rounds=5)
