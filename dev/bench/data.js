@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1697526701961,
+  "lastUpdate": 1697530659161,
   "repoUrl": "https://github.com/zhuwenxing/milvus-backup",
   "entries": {
     "Python Benchmark with pytest-benchmark": [
@@ -148,6 +148,40 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.0033175489331248383",
             "extra": "mean: 30.088050592800005 sec\nrounds: 5"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "zhuwenxing",
+            "username": "zhuwenxing"
+          },
+          "committer": {
+            "name": "zhuwenxing",
+            "username": "zhuwenxing"
+          },
+          "id": "071118118119d1342f6f6d4a19eed86d982413f5",
+          "message": "update",
+          "timestamp": "2023-10-13T10:16:18Z",
+          "url": "https://github.com/zhuwenxing/milvus-backup/pull/11/commits/071118118119d1342f6f6d4a19eed86d982413f5"
+        },
+        "date": 1697530658169,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "testcases/test_perf.py::TestPerf::test_milvus_create_backup_perf[100000]",
+            "value": 1.6296334868634343,
+            "unit": "iter/sec",
+            "range": "stddev: 0.020386851312839648",
+            "extra": "mean: 613.6349112000062 msec\nrounds: 5"
+          },
+          {
+            "name": "testcases/test_perf.py::TestPerf::test_milvus_restore_backup_perf[100000]",
+            "value": 0.033266299131618146,
+            "unit": "iter/sec",
+            "range": "stddev: 0.012796523329042743",
+            "extra": "mean: 30.06045235280002 sec\nrounds: 5"
           }
         ]
       }
