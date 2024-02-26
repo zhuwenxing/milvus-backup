@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1708835182055,
+  "lastUpdate": 1708921571216,
   "repoUrl": "https://github.com/zhuwenxing/milvus-backup",
   "entries": {
     "Python Benchmark with pytest-benchmark": [
@@ -4964,6 +4964,42 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.0020172457600260854",
             "extra": "mean: 25.05011197340001 sec\nrounds: 5"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "zhuwenxing",
+            "username": "zhuwenxing",
+            "email": "wxzhuyeah@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "98cded75464d899ad36b3a2212c2188a9fc0c5bb",
+          "message": "Merge pull request #10 from zhuwenxing/test\n\nupdate",
+          "timestamp": "2023-10-17T07:04:33Z",
+          "url": "https://github.com/zhuwenxing/milvus-backup/commit/98cded75464d899ad36b3a2212c2188a9fc0c5bb"
+        },
+        "date": 1708921570758,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "testcases/test_perf.py::TestPerf::test_milvus_create_backup_perf[100000]",
+            "value": 2.343164833391592,
+            "unit": "iter/sec",
+            "range": "stddev: 0.020780389522693378",
+            "extra": "mean: 426.77321959998835 msec\nrounds: 5"
+          },
+          {
+            "name": "testcases/test_perf.py::TestPerf::test_milvus_restore_backup_perf[100000]",
+            "value": 0.03992205384997663,
+            "unit": "iter/sec",
+            "range": "stddev: 0.008872605245221389",
+            "extra": "mean: 25.048811460399985 sec\nrounds: 5"
           }
         ]
       }
