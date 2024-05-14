@@ -33,17 +33,26 @@ checksum:
   name_template: 'checksums.txt'
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
+#
+#brews:
+#  -
+#    name: milvus-backup
+#    folder: Formula
+#    homepage: "https://github.com/zilliztech/milvus-backup"
+#    repository:
+#      owner: zilliztech
+#      name: homebrew-tap
+#      token: "{{ .Env.GITHUB_HOMEBREW_TOKEN }}"
 
-brews:
-  -
-    name: milvus-backup
-    folder: Formula
-    homepage: "https://github.com/zilliztech/milvus-backup"
-    repository:
-      owner: zilliztech
-      name: homebrew-tap
-      token: "{{ .Env.GITHUB_HOMEBREW_TOKEN }}"
-    
+# dockers:
+#   - image_templates:
+#     - "yourusername/yourimage:{{ .Tag }}"
+#     - "yourusername/yourimage:latest"
+#     dockerfile: Dockerfile
+#     build_flag_templates:
+#       - "--build-arg=VERSION={{.Version}}"
+#     skip_push: false
+
 
 changelog:
   sort: asc
