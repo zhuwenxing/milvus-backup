@@ -37,7 +37,7 @@ snapshot:
 
 brews:
   - name: milvus-backup
-    folder: Formula
+    directory: Formula
     homepage: "https://github.com/zilliztech/milvus-backup"
     repository:
       owner: zilliztech
