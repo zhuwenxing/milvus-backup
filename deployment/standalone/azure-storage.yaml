@@ -11,7 +11,13 @@ extraConfigFiles:
   user.yaml: |+
     common:
       storageType: remote
-
+kafka:
+  enabled: false
+  name: kafka
+  replicaCount: 3
+  defaultReplicationFactor: 2
+pulsar:
+  enabled: false
 minio:
   enabled: false
 
