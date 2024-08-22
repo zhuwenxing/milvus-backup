@@ -1,6 +1,12 @@
 cluster:
   enabled: false
 
+image:
+  all:
+    repository: milvusdb/milvus
+    tag: master-latest
+    pullPolicy: IfNotPresent
+
 extraConfigFiles:
   user.yaml: |+
     common:

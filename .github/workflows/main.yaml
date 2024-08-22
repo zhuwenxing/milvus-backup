@@ -442,7 +442,7 @@ jobs:
         working-directory: deployment/${{ matrix.milvus_mode }}
         run: |
           if [ ${{ matrix.deploy_tools}} == "helm" ]; then
-            helm repo add milvus https://milvus-io.github.io/milvus-helm
+            helm repo add milvus https://zilliztech.github.io/milvus-helm
             helm repo update
             helm install --wait --timeout 600s milvus-backup milvus/milvus -f values.yaml
             kubectl get pods
@@ -561,7 +561,7 @@ jobs:
         working-directory: deployment/${{ matrix.milvus_mode }}
         run: |
           if [ ${{ matrix.deploy_tools}} == "helm" ]; then
-            helm repo add milvus https://milvus-io.github.io/milvus-helm
+            helm repo add milvus https://zilliztech.github.io/milvus-helm
             helm repo update
             helm install --wait --timeout 600s milvus-backup milvus/milvus -f values.yaml
             kubectl get pods
