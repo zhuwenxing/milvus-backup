@@ -444,7 +444,7 @@ jobs:
           if [ ${{ matrix.deploy_tools}} == "helm" ]; then
             helm repo add milvus https://zilliztech.github.io/milvus-helm
             helm repo update
-            helm install --wait --timeout 600s milvus-backup milvus/milvus -f values.yaml
+            helm install --debug --wait --timeout 600s milvus-backup milvus/milvus -f values.yaml
             kubectl get pods
             kubectl port-forward service/milvus-backup 19530 >/dev/null 2>&1 &
             kubectl port-forward service/milvus-backup-minio 9000  >/dev/null 2>&1 &
@@ -563,7 +563,7 @@ jobs:
           if [ ${{ matrix.deploy_tools}} == "helm" ]; then
             helm repo add milvus https://zilliztech.github.io/milvus-helm
             helm repo update
-            helm install --wait --timeout 600s milvus-backup milvus/milvus -f values.yaml
+            helm install --debug --wait --timeout 600s milvus-backup milvus/milvus -f values.yaml
             kubectl get pods
             kubectl port-forward service/milvus-backup 19530 >/dev/null 2>&1 &
             kubectl port-forward service/milvus-backup-minio 9000  >/dev/null 2>&1 &
@@ -691,7 +691,7 @@ jobs:
           if [ ${{ matrix.deploy_tools}} == "helm" ]; then
             helm repo add milvus https://milvus-io.github.io/milvus-helm
             helm repo update
-            helm install --wait --timeout 600s milvus-backup milvus/milvus -f values.yaml
+            helm install --debug --wait --timeout 600s milvus-backup milvus/milvus -f values.yaml
             kubectl get pods
             kubectl port-forward service/milvus-backup 19530 >/dev/null 2>&1 &
             kubectl port-forward service/milvus-backup-minio 9000  >/dev/null 2>&1 &
