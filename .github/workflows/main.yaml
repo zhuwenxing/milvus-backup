@@ -371,6 +371,130 @@ jobs:
         run: |
           python example/verify_data.py
 
+  test-backup-restore-azure:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        deploy_tools: [helm]
+        milvus_mode: [standalone]
+    env:
+      AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+      AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: pip
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.18.0'
+          cache: true
+
+      - name: Creating kind cluster
+        if: ${{ matrix.deploy_tools == 'helm' }}
+        uses: helm/kind-action@v1.2.0
+
+      - name: Modify Milvus config
+
+        timeout-minutes: 15
+        shell: bash
+        working-directory: deployment/${{ matrix.milvus_mode }}
+        run: |
+          mv azure-storage.yaml values.yaml
+          yq -i '.externalS3.rootPath = "milvus-${{ github.run_id }}"' values.yaml
+          yq -i '.externalS3.accessKey = "${{ secrets.AZURE_STORAGE_ACCOUNT }}"' values.yaml
+          yq -i '.externalS3.secretKey = "${{ secrets.AZURE_STORAGE_KEY }}"' values.yaml
+      - name: Build
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          mv configs/backup_azure.yaml configs/backup.yaml
+          if [ ${{ matrix.deploy_tools }} == 'helm' ]; then
+            yq -i '.minio.bucketName = "testmilvus"' configs/backup.yaml
+            yq -i '.minio.rootPath = "milvus-${{ github.run_id }}"' configs/backup.yaml
+            yq -i '.minio.backupBucketName = "testmilvus"' configs/backup.yaml
+            yq -i '.minio.backupAccessKeyID = "${{ secrets.AZURE_STORAGE_ACCOUNT }}"' configs/backup.yaml
+            yq -i '.minio.backupSecretAccessKey = "${{ secrets.AZURE_STORAGE_KEY }}"' configs/backup.yaml            
+            yq -i '.minio.backupRootPath = "backup-${{ github.run_id }}"' configs/backup.yaml            
+
+          fi
+          yq -i '.log.level = "debug"' configs/backup.yaml
+          go get
+          go build
+      - name: Install dependency
+
+        timeout-minutes: 5
+        working-directory: tests
+        shell: bash
+        run: |
+          pip install -r requirements.txt --trusted-host https://test.pypi.org
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+      - name: Milvus deploy
+
+        timeout-minutes: 15
+        shell: bash
+        working-directory: deployment/${{ matrix.milvus_mode }}
+        run: |
+          if [ ${{ matrix.deploy_tools}} == "helm" ]; then
+            helm repo add milvus https://zilliztech.github.io/milvus-helm
+            helm repo update
+            helm install --debug --wait --timeout 600s milvus-backup milvus/milvus -f values.yaml
+            kubectl get pods
+            kubectl port-forward service/milvus-backup 19530 >/dev/null 2>&1 &
+            kubectl port-forward service/milvus-backup-minio 9000  >/dev/null 2>&1 &
+            sleep 10
+            nc -vz 127.0.0.1 19530
+            sleep 10
+            kubectl get pods -n default | grep milvus-backup
+          fi
+
+          if [ ${{ matrix.deploy_tools}} == "docker-compose" ]; then
+            docker-compose up -d
+            bash ../../scripts/check_healthy.sh
+            docker-compose ps -a
+          fi
+      - name: Prepare data
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          python example/prepare_data.py
+      - name: Backup
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          ./milvus-backup check
+          ./milvus-backup list
+          ./milvus-backup create -n my_backup
+          ./milvus-backup list
+      - name: Restore backup
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          ./milvus-backup restore -n my_backup -s _recover
+      - name: Verify data
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          python example/verify_data.py
+      - name: Clean up
+        if: ${{ always() }}
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            CONTAINER_NAME="testmilvus"
+            az storage blob list --container-name testmilvus --output table
+            az storage blob delete-batch --source testmilvus --pattern "milvus-${{ github.run_id }}/*"
+            az storage blob delete-batch --source testmilvus --pattern "backup-${{ github.run_id }}/*"
+            az storage blob list --container-name testmilvus --output table
+
+
   test-backup-restore-with-custom-config:
     runs-on: ubuntu-latest
     strategy:
@@ -436,9 +560,9 @@ jobs:
         working-directory: deployment/${{ matrix.milvus_mode }}
         run: |
           if [ ${{ matrix.deploy_tools}} == "helm" ]; then
-            helm repo add milvus https://milvus-io.github.io/milvus-helm
+            helm repo add milvus https://zilliztech.github.io/milvus-helm
             helm repo update
-            helm install --wait --timeout 600s milvus-backup milvus/milvus -f values.yaml
+            helm install --debug --wait --timeout 600s milvus-backup milvus/milvus -f values.yaml
             kubectl get pods
             kubectl port-forward service/milvus-backup 19530 >/dev/null 2>&1 &
             kubectl port-forward service/milvus-backup-minio 9000  >/dev/null 2>&1 &
@@ -566,7 +690,7 @@ jobs:
           if [ ${{ matrix.deploy_tools}} == "helm" ]; then
             helm repo add milvus https://milvus-io.github.io/milvus-helm
             helm repo update
-            helm install --wait --timeout 600s milvus-backup milvus/milvus -f values.yaml
+            helm install --debug --wait --timeout 600s milvus-backup milvus/milvus -f values.yaml
             kubectl get pods
             kubectl port-forward service/milvus-backup 19530 >/dev/null 2>&1 &
             kubectl port-forward service/milvus-backup-minio 9000  >/dev/null 2>&1 &
