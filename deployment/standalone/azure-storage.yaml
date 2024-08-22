@@ -1,0 +1,21 @@
+cluster:
+  enabled: false
+
+extraConfigFiles:
+  user.yaml: |+
+    common:
+      storageType: remote
+
+minio:
+  enabled: false
+
+externalS3:
+  enabled: true
+  host: core.windows.net
+  port: 443
+  rootPath: my-release-v2
+  bucketName: testmilvus # the storage account container name
+  cloudProvider: azure
+  useSSL: true
+  accessKey: "AZURE_STORAGE_ACCOUNT" # the storage account name
+  secretKey: "AZURE_STORAGE_KEY" # the storage account key
