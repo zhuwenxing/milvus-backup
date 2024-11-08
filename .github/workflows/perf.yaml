@@ -15,14 +15,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-backup-restore-api:
+  test-perf:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         deploy_tools: [docker-compose]
         milvus_mode: [standalone]
-        milvus_version: [master-latest, 2.3.0-latest, 2.2.0-latest]
+        milvus_version: [master-latest]
 
     steps:
       - uses: actions/checkout@v3
@@ -102,7 +102,31 @@ jobs:
         shell: bash
         working-directory: tests
         run: |
-          pytest -s -v --tags Perf --log-cli-level=INFO --capture=no
+          pytest -s -v testcases/test_perf.py --benchmark-json output.json
+ 
+
+      - name: Git stash
+        if: ${{ always() }}
+        run: |
+          git stash
+          git stash clear  
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Milvus backup restore performance test
+          tool: 'pytest'
+          output-file-path: tests/output.json
+          # Use personal access token instead of GITHUB_TOKEN due to https://github.community/t/github-action-not-triggering-gh-pages-upon-push/16096
+          github-token: ${{ secrets.RELEASE_TOKEN }}
+          auto-push: true
+          # Show alert with commit comment on detecting possible performance regression
+          comment-always: true
+          alert-threshold: '200%'
+          comment-on-alert: true
+          summary-always: true
+          fail-on-alert: true
+          alert-comment-cc-users: '@github-actions'
 
       - name: Get Milvus status
         shell: bash
