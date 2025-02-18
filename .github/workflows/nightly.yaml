@@ -13,7 +13,7 @@ jobs:
       matrix:
         deploy_tools: [docker-compose]
         milvus_mode: [standalone]
-        milvus_version: [master, 2.5]
+        milvus_version: ["master", "2.5"]
 
     steps:
       - uses: actions/checkout@v4
