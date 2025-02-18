@@ -52,10 +52,10 @@ def get_latest_tag(namespace, repository, tag_prefix="", tag_suffix=""):
 
 def main():
     parser = argparse.ArgumentParser(description='Get latest Docker image tag with specific prefix and suffix')
-    parser.add_argument('--namespace', required=True, help='DockerHub namespace/organization')
-    parser.add_argument('--repository', required=True, help='Repository name')
-    parser.add_argument('--prefix', default="master", help='Tag prefix to filter')
-    parser.add_argument('--arch', default="amd64", help='Tag arch to filter')
+    parser.add_argument('-n', '--namespace', required=True, help='DockerHub namespace/organization')
+    parser.add_argument('-r', '--repository', required=True, help='Repository name')
+    parser.add_argument('-p', '--prefix', default="master", help='Tag prefix to filter')
+    parser.add_argument('-a', '--arch', default="amd64", help='Tag arch to filter')
     
     args = parser.parse_args()
     
