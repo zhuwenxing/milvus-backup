@@ -13,7 +13,7 @@ jobs:
       matrix:
         deploy_tools: [docker-compose]
         milvus_mode: [standalone]
-        milvus_version: [master-latest, 2.5-latest]
+        milvus_version: [master, 2.5]
 
     steps:
       - uses: actions/checkout@v4
@@ -77,7 +77,8 @@ jobs:
           fi
 
           if [ ${{ matrix.deploy_tools}} == "docker-compose" ]; then
-            yq -i '.services.standalone.image= "milvusdb/milvus:${{ matrix.milvus_version }}"' docker-compose.yml
+            tag=$(python3 ../../scripts/get_latest_tag.py -n milvusdb -r milvus --prefix master --arch amd64)
+            yq -i '.services.standalone.image= "milvusdb/milvus:${tag}"' docker-compose.yml
             cat docker-compose.yml
             docker-compose up -d
             bash ../../scripts/check_healthy.sh
