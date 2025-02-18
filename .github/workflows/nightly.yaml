@@ -78,7 +78,7 @@ jobs:
 
           if [ ${{ matrix.deploy_tools}} == "docker-compose" ]; then
             tag=$(python3 ../../scripts/get_latest_tag.py -n milvusdb -r milvus --prefix ${{ matrix.milvus_version }} --arch amd64)
-            yq -i '.services.standalone.image= "milvusdb/milvus:${tag}"' docker-compose.yml
+            yq -i ".services.standalone.image= \"milvusdb/milvus:$tag\"" docker-compose.yml
             cat docker-compose.yml
             docker-compose up -d
             bash ../../scripts/check_healthy.sh
