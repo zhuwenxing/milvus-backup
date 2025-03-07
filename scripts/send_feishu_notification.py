@@ -53,14 +53,11 @@ def format_test_report(report):
     # Build failed test cases list
     failed_tests_str = ''
     for module, tests in grouped_failures.items():
-        failed_tests_str += f"\nModule: {module}\n"
+        failed_tests_str += f"<br>Module: {module}<br>"
         for test in tests:
-            failed_tests_str += f"  - {test}\n"
+            failed_tests_str += f"  - {test}<br>"
 
-    message = f"""Test Summary: {report['summary']}
-Test Result: {'❌ ' if report['failed_count'] > 0 else '✅ '}Total {report['total_count']} tests, {report['failed_count']} failed
-
-Failed Test Cases:{failed_tests_str}"""
+    message = f"""Test Summary: {report['summary']}<br>Test Result: {'❌ ' if report['failed_count'] > 0 else '✅ '}Total {report['total_count']} tests, {report['failed_count']} failed<br><br>Failed Test Cases:{failed_tests_str}"""
     print(f"Test Report:\n{message}")
     return message
 
@@ -81,9 +78,9 @@ def get_error_info():
                 lines = f.readlines()
                 if lines:
                     error_info.append(f"{error_type}:")
-                    error_info.extend(lines[-10:])  # Get last 10 lines
+                    error_info.extend(line.strip() for line in lines[-10:])  # Get last 10 lines
 
-    return '\n'.join(error_info) if error_info else None
+    return '<br>'.join(error_info) if error_info else None
 
 
 
@@ -111,7 +108,7 @@ def send_feishu_message(webhook_url, job_status, job_info, test_report=None, err
                 {
                     "tag": "div",
                     "text": {
-                        "content": f"**Job Info**\n{job_info}",
+                        "content": f"**Job Info**<br>{job_info.replace('\n', '<br>')}",
                         "tag": "lark_md"
                     }
                 },
@@ -125,7 +122,7 @@ def send_feishu_message(webhook_url, job_status, job_info, test_report=None, err
                 {
                     "tag": "div",
                     "text": {
-                        "content": content,
+                        "content": content.replace('\n', '<br>') if content else content,
                         "tag": "lark_md"
                     }
                 },
