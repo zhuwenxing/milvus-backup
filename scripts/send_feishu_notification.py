@@ -57,8 +57,9 @@ def format_test_report(report):
         for test in tests:
             failed_tests_str += f"  - {test}<br>"
 
-    message = f"""Test Summary: {report['summary']}<br>Test Result: {'❌ ' if report['failed_count'] > 0 else '✅ '}Total {report['total_count']} tests, {report['failed_count']} failed<br><br>Failed Test Cases:{failed_tests_str}"""
-    print(f"Test Report:\n{message}")
+    message = f"Test Summary: {report['summary']}<br>Test Result: {'❌ ' if report['failed_count'] > 0 else '✅ '}Total {report['total_count']} tests, {report['failed_count']} failed<br><br>Failed Test Cases:{failed_tests_str}"
+    print("Test Report:")
+    print(message)
     return message
 
 def get_error_info():
@@ -100,7 +101,7 @@ def send_feishu_message(webhook_url, job_status, job_info, test_report=None, err
             "header": {
                 "template": "green" if job_status == "success" else "red",
                 "title": {
-                    "content": f"{'✅' if job_status == 'success' else '❌'} Nightly Test - {job_status}",
+                    "content": ('✅' if job_status == 'success' else '❌') + ' Nightly Test - ' + job_status,
                     "tag": "plain_text"
                 }
             },
@@ -108,7 +109,7 @@ def send_feishu_message(webhook_url, job_status, job_info, test_report=None, err
                 {
                     "tag": "div",
                     "text": {
-                        "content": f"**Job Info**<br>{job_info.replace('\n', '<br>')}",
+                        "content": "**Job Info**<br>" + job_info.replace('\n', '<br>'),
                         "tag": "lark_md"
                     }
                 },
@@ -135,7 +136,7 @@ def send_feishu_message(webhook_url, job_status, job_info, test_report=None, err
                                 "content": "View Detailed Report",
                                 "tag": "plain_text"
                             },
-                            "url": f"{os.environ.get('GITHUB_SERVER_URL', '')}/{os.environ.get('GITHUB_REPOSITORY', '')}/actions/runs/{os.environ.get('GITHUB_RUN_ID', '')}",
+                            "url": os.environ.get('GITHUB_SERVER_URL', '') + '/' + os.environ.get('GITHUB_REPOSITORY', '') + '/actions/runs/' + os.environ.get('GITHUB_RUN_ID', ''),
                             "type": "default"
                         }
                     ]
@@ -145,16 +146,16 @@ def send_feishu_message(webhook_url, job_status, job_info, test_report=None, err
     }
 
     response = requests.post(webhook_url, json=message)
-    print(f"Feishu message status: {response.status_code}, content: {response.text}")
+    print("Feishu message status: " + str(response.status_code) + ", content: " + response.text)
 
     # 解析响应JSON
     try:
         result = response.json()
         if result.get('code') != 0:
-            print(f"Failed to send Feishu message: {result.get('msg')}")
+            print("Failed to send Feishu message: " + str(result.get('msg')))
             sys.exit(1)
     except ValueError as e:
-        print(f"Failed to parse Feishu response: {e}")
+        print("Failed to parse Feishu response: " + str(e))
         sys.exit(1)
 
 def main():
@@ -179,7 +180,7 @@ def main():
             if report:
                 test_report = format_test_report(report)
         except Exception as e:
-            print(f"Error parsing test report: {e}")
+            print("Error parsing test report: " + str(e))
 
     error_info = get_error_info()
 
