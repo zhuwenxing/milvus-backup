@@ -167,6 +167,11 @@ def main():
     job_info = sys.argv[3]
     report_path = sys.argv[4] if len(sys.argv) > 4 else None
 
+    # 只在非成功状态下发送通知
+    if job_status == "success":
+        print("Job succeeded, skipping notification")
+        return
+
     test_report = None
     if report_path:
         try:
@@ -176,9 +181,7 @@ def main():
         except Exception as e:
             print(f"Error parsing test report: {e}")
 
-    error_info = None
-    if job_status != "success":
-        error_info = get_error_info()
+    error_info = get_error_info()
 
     send_feishu_message(webhook_url, job_status, job_info, test_report, error_info)
 
