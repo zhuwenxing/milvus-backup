@@ -90,6 +90,14 @@ jobs:
         shell: bash
         run: |
           ./milvus-backup server > server.log 2>&1 &
+          # Wait for server to start
+          sleep 5
+          # Check if server is running
+          if ! ps aux | grep -v grep | grep "milvus-backup server" > /dev/null; then
+            echo "Server failed to start, check logs:"
+            cat server.log
+            exit 1
+          fi
 
       - name: Run test
         timeout-minutes: 180
@@ -128,6 +136,16 @@ jobs:
             ./server.log
             /tmp/ci_logs
             deployment/${{ matrix.milvus_mode }}/logs
+
+
+      - name: Send Feishu notification
+        if: always()
+        run: |
+          python scripts/send_feishu_notification.py \
+            "${{ secrets.FEISHU_WEBHOOK }}" \
+            "${{ job.status }}" \
+            "Job: test-backup-restore-api\nDeploy Tool: ${{ matrix.deploy_tools }}\nMilvus Mode: ${{ matrix.milvus_mode }}\nMilvus Version: ${{ matrix.milvus_version }}" \
+            "/tmp/ci_logs/report.html"
 
   test-backup-restore-with-custom-config:
     runs-on: ubuntu-latest
@@ -216,25 +234,57 @@ jobs:
         timeout-minutes: 5
         shell: bash
         run: |
-          python example/prepare_data.py
+          python example/prepare_data.py > example/prepare_data.py.log 2>&1
       - name: Backup
         timeout-minutes: 5
         shell: bash
         run: |
-          ./milvus-backup check
-          ./milvus-backup list
-          ./milvus-backup create -n my_backup
-          ./milvus-backup list
+          ./milvus-backup check > backup_commands.log 2>&1
+          ./milvus-backup list >> backup_commands.log 2>&1
+          ./milvus-backup create -n my_backup >> backup_commands.log 2>&1
+          ./milvus-backup list >> backup_commands.log 2>&1
       - name: Restore backup
         timeout-minutes: 5
         shell: bash
         run: |
-          ./milvus-backup restore -n my_backup -s _recover
+          ./milvus-backup restore -n my_backup -s _recover > restore_commands.log 2>&1
       - name: Verify data
         timeout-minutes: 5
         shell: bash
         run: |
-          python example/verify_data.py
+          python example/verify_data.py > example/verify_data.py.log 2>&1
+      - name: Set default status
+        if: success()
+        run: |
+          echo "STATUS_INFO= Test Passed" >> $GITHUB_ENV
+
+      - name: Get step error
+        if: failure()
+        run: |
+          echo "STATUS_INFO<<EOF" >> $GITHUB_ENV
+          # Collect error information from failed steps
+          if [ -f "./server.log" ]; then
+            echo "Server Error:" >> $GITHUB_ENV
+            tail -n 10 ./server.log >> $GITHUB_ENV
+          fi
+          if [ -f "./example/prepare_data.py.log" ]; then
+            echo "Data Preparation Error:" >> $GITHUB_ENV
+            tail -n 10 ./example/prepare_data.py.log >> $GITHUB_ENV
+          fi
+          if [ -f "./backup_commands.log" ]; then
+            echo "Backup Command Error:" >> $GITHUB_ENV
+            tail -n 10 ./backup_commands.log >> $GITHUB_ENV
+          fi
+          if [ -f "./restore_commands.log" ]; then
+            echo "Restore Command Error:" >> $GITHUB_ENV
+            tail -n 10 ./restore_commands.log >> $GITHUB_ENV
+          fi
+          if [ -f "./example/verify_data.py.log" ]; then
+            echo "Data Verification Error:" >> $GITHUB_ENV
+            tail -n 10 ./example/verify_data.py.log >> $GITHUB_ENV
+          fi
+          echo "EOF" >> $GITHUB_ENV
+
       - name: Export logs
         if: ${{ always() }}
         shell: bash
@@ -258,3 +308,13 @@ jobs:
             ./server.log
             /tmp/ci_logs
             deployment/${{ matrix.milvus_mode }}/logs
+            example/*.log
+
+
+      - name: Send Feishu notification
+        if: always()
+        run: |
+          python scripts/send_feishu_notification.py \
+            "${{ secrets.FEISHU_WEBHOOK }}" \
+            "${{ job.status }}" \
+            "Job: test-backup-restore-with-custom-config\nDeploy Tool: ${{ matrix.deploy_tools }}\nMilvus Mode: ${{ matrix.milvus_mode }}\nMinio Root Path: ${{ matrix.milvus_minio_rootpath }}\nBackup Bucket Name: ${{ matrix.backup_bucket_name }}"

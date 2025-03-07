@@ -55,3 +55,6 @@ jaxlib==0.4.13
 # for text match
 bm25s==0.2.0
 jieba==0.42.1
+
+# for parse test report
+beautifulsoup4==4.13.3
