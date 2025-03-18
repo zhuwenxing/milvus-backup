@@ -1,4 +1,5 @@
 import logging
+import os
 
 import pytest
 import socket
@@ -45,6 +46,7 @@ def pytest_addoption(parser):
         default=True,
         help="secure for connection",
     )
+    parser.addoption("--embedding_api_key", action="store", default=os.environ.get("EMBEDDING_API_KEY", "sk-"), help="embedding api key")
     parser.addoption(
         "--milvus_ns", action="store", default="chaos-testing", help="milvus_ns"
     )
@@ -116,7 +118,7 @@ def pytest_addoption(parser):
     )
     parser.addoption(
         "--replica_num",
-        type="int",
+        type=int,
         action="store",
         default=ct.default_replica_num,
         help="memory replica number",
@@ -157,6 +159,10 @@ def password(request):
 def secure(request):
     return request.config.getoption("--secure")
 
+
+@pytest.fixture
+def embedding_api_key(request):
+    return request.config.getoption("--embedding_api_key")
 
 @pytest.fixture
 def milvus_ns(request):

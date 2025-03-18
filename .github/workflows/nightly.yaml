@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: '0 2 * * *'
 
+env:
+  EMBEDDING_API_KEY: "${{ secrets.EMBEDDING_API_KEY }}"
+
 jobs:
   test-backup-restore-api:
     runs-on: ubuntu-latest
@@ -95,6 +98,8 @@ jobs:
         timeout-minutes: 180
         shell: bash
         working-directory: tests
+        env:
+          EMBEDDING_API_KEY: "${{ secrets.EMBEDDING_API_KEY }}"
         run: |
           pytest -s -v --tags L0 L1 L2 L3 -n 4
 
@@ -215,6 +220,8 @@ jobs:
       - name: Prepare data
         timeout-minutes: 5
         shell: bash
+        env:
+          EMBEDDING_API_KEY: "${{ secrets.EMBEDDING_API_KEY }}"
         run: |
           python example/prepare_data.py
       - name: Backup
@@ -233,6 +240,8 @@ jobs:
       - name: Verify data
         timeout-minutes: 5
         shell: bash
+        env:
+          EMBEDDING_API_KEY: "${{ secrets.EMBEDDING_API_KEY }}"
         run: |
           python example/verify_data.py
       - name: Export logs
