@@ -627,6 +627,7 @@ jobs:
         working-directory: tests
         run: |
           export EMBEDDING_API_KEY=${{ secrets.EMBEDDING_API_KEY }}
+          echo $EMBEDDING_API_KEY
           pytest -s -v --tags ${{ matrix.case_tag }} -n 4
 
       - name: Get Milvus status

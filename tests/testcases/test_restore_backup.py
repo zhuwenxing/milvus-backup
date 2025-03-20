@@ -1365,6 +1365,7 @@ class TestRestoreBackup(TestcaseBase):
             cf.gen_float_vec_field(name="dense", dim=dim),
         ]
         default_schema = cf.gen_collection_schema(fields)
+        print(embedding_api_key)
         text_embedding_function = Function(
             name="siliconflow",
             function_type=FunctionType.TEXTEMBEDDING,
