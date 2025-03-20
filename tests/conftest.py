@@ -1,4 +1,3 @@
-import logging
 import os
 
 import pytest
@@ -11,7 +10,6 @@ from common.common_func import param_info
 from check.param_check import ip_check, number_check
 from config.log_config import log_config
 from utils.util_pymilvus import (
-    get_milvus,
     gen_unique_str,
     gen_default_fields,
     gen_binary_default_fields,
@@ -415,45 +413,6 @@ def check_server_connection(request):
 
 
 @pytest.fixture(scope="module")
-def connect(request):
-    host = request.config.getoption("--host")
-    port = request.config.getoption("--port")
-    http_port = request.config.getoption("--http_port")
-    handler = request.config.getoption("--handler")
-    if handler == "HTTP":
-        port = http_port
-    try:
-        milvus = get_milvus(host=host, port=port, handler=handler)
-        # reset_build_index_threshold(milvus)
-    except Exception as e:
-        logging.getLogger().error(str(e))
-        pytest.exit("Milvus server can not connected, exit pytest ...")
-
-    def fin():
-        try:
-            milvus.close()
-            pass
-        except Exception as e:
-            logging.getLogger().info(str(e))
-
-    request.addfinalizer(fin)
-    return milvus
-
-
-@pytest.fixture(scope="module")
-def dis_connect(request):
-    host = request.config.getoption("--host")
-    port = request.config.getoption("--port")
-    http_port = request.config.getoption("--http_port")
-    handler = request.config.getoption("--handler")
-    if handler == "HTTP":
-        port = http_port
-    milvus = get_milvus(host=host, port=port, handler=handler)
-    milvus.close()
-    return milvus
-
-
-@pytest.fixture(scope="module")
 def args(request):
     host = request.config.getoption("--host")
     service_name = request.config.getoption("--service")
@@ -465,16 +424,6 @@ def args(request):
     args = {"ip": host, "port": port, "handler": handler, "service_name": service_name}
     return args
 
-
-@pytest.fixture(scope="module")
-def milvus(request):
-    host = request.config.getoption("--host")
-    port = request.config.getoption("--port")
-    http_port = request.config.getoption("--http_port")
-    handler = request.config.getoption("--handler")
-    if handler == "HTTP":
-        port = http_port
-    return get_milvus(host=host, port=port, handler=handler)
 
 
 @pytest.fixture(scope="function")
