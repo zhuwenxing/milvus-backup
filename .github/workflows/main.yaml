@@ -626,7 +626,8 @@ jobs:
         shell: bash
         working-directory: tests
         run: |
-          pytest -s -v --tags ${{ matrix.case_tag }} -n 4 --embedding_api_key ${{ secrets.EMBEDDING_API_KEY }}
+          export EMBEDDING_API_KEY=${{ secrets.EMBEDDING_API_KEY }}
+          pytest -s -v --tags ${{ matrix.case_tag }} -n 4
 
       - name: Get Milvus status
         shell: bash
