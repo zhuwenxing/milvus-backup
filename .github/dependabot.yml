@@ -13,7 +13,6 @@ updates:
     open-pull-requests-limit: 10
     allow:
       - dependency-type: "all"
-    security-updates-only: true
 
   # Go dependency update configuration
   - package-ecosystem: "gomod"
@@ -23,7 +22,6 @@ updates:
     open-pull-requests-limit: 10
     allow:
       - dependency-type: "all"
-    security-updates-only: true
 
   # Python dependency update configuration
   - package-ecosystem: "pip"
@@ -33,4 +31,3 @@ updates:
     open-pull-requests-limit: 10
     allow:
       - dependency-type: "all"
-    security-updates-only: true
