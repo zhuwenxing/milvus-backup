@@ -70,7 +70,7 @@ jobs:
           AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
           AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
         run: |
-          cp deployment/milvus_backup_config/backup-azure.yaml configs/backup.yaml
+          cp ../milvus_backup_config/backup-azure.yaml configs/backup.yaml
           tag=$(python ../../scripts/get_image_tag_by_short_name.py --tag ${{ matrix.image_tag }}) && echo $tag
           yq -i ".services.standalone.image=\"milvusdb/milvus:${tag}\"" docker-compose-az-storage.yml
           yq -i ".services.etcd.image=\"quay.io/coreos/etcd:v3.5.5\"" docker-compose-az-storage.yml  
