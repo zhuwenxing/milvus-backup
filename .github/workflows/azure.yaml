@@ -83,6 +83,19 @@ jobs:
           docker-compose -f docker-compose-az-storage.yml up -d --wait
           docker-compose -f docker-compose-az-storage.yml ps
       
+      - name: Clean up Azure storage (before test)
+        timeout-minutes: 5
+        shell: bash
+        env:
+          AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+          AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
+        run: |
+          # Install Azure CLI if not available
+          which az || (curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash)
+          # Clean up existing data
+          az storage blob delete-batch --account-name "$AZURE_STORAGE_ACCOUNT" --account-key "$AZURE_STORAGE_KEY" --source milvus-data --pattern "milvus/azure-instance/*" || true
+          az storage blob delete-batch --account-name "$AZURE_STORAGE_ACCOUNT" --account-key "$AZURE_STORAGE_KEY" --source milvus-data --pattern "backup/*" || true
+      
       - name: Prepare data
         timeout-minutes: 5
         shell: bash
@@ -119,3 +132,15 @@ jobs:
         shell: bash
         run: |
           python example/verify_data.py
+      
+      - name: Clean up Azure storage (after test)
+        if: always()
+        timeout-minutes: 5
+        shell: bash
+        env:
+          AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+          AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
+        run: |
+          # Clean up test data regardless of test result
+          az storage blob delete-batch --account-name "$AZURE_STORAGE_ACCOUNT" --account-key "$AZURE_STORAGE_KEY" --source milvus-data --pattern "milvus/azure-instance/*" || true
+          az storage blob delete-batch --account-name "$AZURE_STORAGE_ACCOUNT" --account-key "$AZURE_STORAGE_KEY" --source milvus-data --pattern "backup/*" || true
