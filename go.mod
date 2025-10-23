@@ -1,6 +1,6 @@
 module github.com/zilliztech/milvus-backup
 
-go 1.18
+go 1.23.0
 
 require (
 	github.com/blang/semver/v4 v4.0.0
@@ -26,7 +26,7 @@ require (
 	go.uber.org/zap v1.17.0
 	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6
 	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
-	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
+	golang.org/x/sync v0.11.0
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	google.golang.org/grpc v1.48.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
@@ -81,11 +81,11 @@ require (
 	go.etcd.io/etcd/api/v3 v3.5.0 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
-	golang.org/x/net v0.2.0 // indirect
-	golang.org/x/sys v0.2.0 // indirect
-	golang.org/x/text v0.4.0 // indirect
-	golang.org/x/tools v0.1.12 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
+	golang.org/x/net v0.25.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
+	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220503193339-ba3ae3f07e29 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
