@@ -1,14 +1,25 @@
-From  golang:1.18 AS builder
+FROM golang:1.23 AS builder
 
 ENV CGO_ENABLED=0
-WORKDIR /app
-COPY . .
-RUN go mod tidy
-RUN go build -o /app/milvus-backup
 
-From alpine:3.17
+ARG VERSION=0.0.1
+ARG COMMIT=unknown
+
 WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN make build
+
+FROM alpine:3.17
+
+WORKDIR /app
+RUN apk update && apk add --no-cache \
+    ca-certificates \
+    curl
+
 COPY --from=builder /app/milvus-backup .
 COPY --from=builder /app/configs ./configs
 EXPOSE 8080
-ENTRYPOINT ["milvus-backup", "server"]
+ENTRYPOINT ["/app/milvus-backup", "server"]

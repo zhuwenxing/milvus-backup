@@ -1,4 +1,5 @@
-""" Initialized parameters """
+"""Initialized parameters"""
+
 port = 19530
 epsilon = 0.000001
 namespace = "milvus"
@@ -15,9 +16,13 @@ default_search_params = {"metric_type": "L2", "params": {"nprobe": 10}}
 default_search_ip_params = {"metric_type": "IP", "params": {"nprobe": 10}}
 default_search_binary_params = {"metric_type": "JACCARD", "params": {"nprobe": 10}}
 default_index = {"index_type": "IVF_SQ8", "metric_type": "L2", "params": {"nlist": 64}}
-default_binary_index = {"index_type": "BIN_IVF_FLAT", "params": {"nlist": 128}, "metric_type": "JACCARD"}
-default_diskann_index ={"index_type": "DISKANN", "metric_type":"L2", "params": {}}
-default_diskann_search_params ={"metric_type": "L2", "params": {"search_list": 30}}
+default_binary_index = {
+    "index_type": "BIN_IVF_FLAT",
+    "params": {"nlist": 128},
+    "metric_type": "JACCARD",
+}
+default_diskann_index = {"index_type": "DISKANN", "metric_type": "L2", "params": {}}
+default_diskann_search_params = {"metric_type": "L2", "params": {"search_list": 30}}
 max_top_k = 16384
 max_partition_num = 4096  # 256
 default_segment_row_limit = 1000
@@ -33,7 +38,16 @@ default_int64_field_name = "int64"
 default_float_field_name = "float"
 default_double_field_name = "double"
 default_string_field_name = "varchar"
+default_json_field_name = "json"
+default_json_list_length = 1
+default_array_field_name = "array"
+default_int64_array_field_name = "int64_array"
+default_float_array_field_name = "float_array"
+default_string_array_field_name = "string_array"
+default_bool_array_field_name = "bool_array"
 default_float_vec_field_name = "float_vector"
+default_sparse_vec_field_name = "sparse_vector"
+default_bm25_vec_field_name = "bm25_vector"
 another_float_vec_field_name = "float_vector1"
 default_binary_vec_field_name = "binary_vector"
 default_partition_name = "_default"
@@ -72,8 +86,16 @@ err_code = "err_code"
 err_msg = "err_msg"
 in_cluster_env = "IN_CLUSTER"
 
-default_flat_index = {"index_type": "FLAT", "params": {}, "metric_type": "L2"}
-default_bin_flat_index = {"index_type": "BIN_FLAT", "params": {}, "metric_type": "JACCARD"}
+default_flat_index = {
+    "index_type": "IVF_SQ8",
+    "metric_type": "COSINE",
+    "params": {"nlist": 64},
+}
+default_bin_flat_index = {
+    "index_type": "BIN_IVF_FLAT",
+    "params": {"nlist": 128},
+    "metric_type": "JACCARD",
+}
 
 """" List of parameters used to pass """
 get_invalid_strs = [
@@ -90,24 +112,17 @@ get_invalid_strs = [
     "(mn)",
     "中文",
     "%$#",
-    "a".join("a" for i in range(256))]
-
-get_not_string = [
-    [],
-    {},
-    None,
-    (1,),
-    1,
-    1.0,
-    [1, "2", 3]
+    "a".join("a" for i in range(256)),
 ]
+
+get_not_string = [[], {}, None, (1,), 1, 1.0, [1, "2", 3]]
 
 get_invalid_vectors = [
     "1*2",
     [1],
     [1, 2],
     [" "],
-    ['a'],
+    ["a"],
     [None],
     None,
     (1, 2),
@@ -117,7 +132,7 @@ get_invalid_vectors = [
     "String",
     " siede ",
     "中文",
-    "a".join("a" for i in range(256))
+    "a".join("a" for i in range(256)),
 ]
 
 get_invalid_ints = [
@@ -131,7 +146,7 @@ get_invalid_ints = [
     "String",
     "=c",
     "中文",
-    "a".join("a" for i in range(256))
+    "a".join("a" for i in range(256)),
 ]
 
 get_invalid_dict = [
@@ -146,13 +161,10 @@ get_invalid_dict = [
     {1: 1},
     {"中文": 1},
     {"%$#": ["a"]},
-    {"a".join("a" for i in range(256)): "a"}
+    {"a".join("a" for i in range(256)): "a"},
 ]
 
-get_dict_without_host_port = [
-    {"host": "host"},
-    {"": ""}
-]
+get_dict_without_host_port = [{"host": "host"}, {"": ""}]
 
 get_dict_invalid_host_port = [
     {"port": "port"},
@@ -165,14 +177,31 @@ get_dict_invalid_host_port = [
 
 get_wrong_format_dict = [
     {"host": "string_host", "port": {}},
-    {"host": 0, "port": 19520}
+    {"host": 0, "port": 19520},
 ]
 
 """ Specially defined list """
-all_index_types = ["FLAT", "IVF_FLAT", "IVF_SQ8", "IVF_PQ", "HNSW", "ANNOY", "BIN_FLAT", "BIN_IVF_FLAT"]
+all_index_types = [
+    "FLAT",
+    "IVF_FLAT",
+    "IVF_SQ8",
+    "IVF_PQ",
+    "HNSW",
+    "ANNOY",
+    "BIN_FLAT",
+    "BIN_IVF_FLAT",
+]
 
-default_index_params = [{"nlist": 128}, {"nlist": 128}, {"nlist": 128}, {"nlist": 128, "m": 16, "nbits": 8},
-                        {"M": 48, "efConstruction": 500}, {"n_trees": 50}, {"nlist": 128}, {"nlist": 128}]
+default_index_params = [
+    {"nlist": 128},
+    {"nlist": 128},
+    {"nlist": 128},
+    {"nlist": 128, "m": 16, "nbits": 8},
+    {"M": 48, "efConstruction": 500},
+    {"n_trees": 50},
+    {"nlist": 128},
+    {"nlist": 128},
+]
 
 Handler_type = ["GRPC", "HTTP"]
 binary_support = ["BIN_FLAT", "BIN_IVF_FLAT"]
@@ -184,7 +213,8 @@ structure_metrics = ["SUBSTRUCTURE", "SUPERSTRUCTURE"]
 
 
 class CheckTasks:
-    """ The name of the method used to check the result """
+    """The name of the method used to check the result"""
+
     check_nothing = "check_nothing"
     err_res = "error_response"
     ccr = "check_connection_result"
@@ -237,9 +267,11 @@ class CaseLabel:
         ClusterOnly:
             For functions only suitable to cluster mode
     """
+
     L0 = "L0"
     L1 = "L1"
     L2 = "L2"
     L3 = "L3"
-    Loadbalance = "Loadbalance"  # loadbalance testcases which need to be run in multi query nodes
-    ClusterOnly = "ClusterOnly"  # For functions only suitable to cluster mode
+    Perf = "Perf"
+    MASTER = "MASTER"
+    RELEASE = "RELEASE"
