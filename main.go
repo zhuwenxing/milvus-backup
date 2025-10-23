@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/zilliztech/milvus-backup/cmd"
 	_ "github.com/zilliztech/milvus-backup/docs"
+	"github.com/zilliztech/milvus-backup/version"
 )
 
 // @title           Milvus Backup Service
@@ -14,5 +15,6 @@ import (
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 // @BasePath  /api/v1
 func main() {
+	cmd.SetVersionInfo(version.Version, version.Commit, version.Date)
 	cmd.Execute()
 }
