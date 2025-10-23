@@ -28,11 +28,7 @@ import (
 	memkv "github.com/zilliztech/milvus-backup/internal/kv/mem"
 	"github.com/zilliztech/milvus-backup/internal/log"
 	"github.com/zilliztech/milvus-backup/internal/util/logutil"
-	"github.com/zilliztech/milvus-backup/internal/util/typeutil"
 )
-
-// UniqueID is type alias of typeutil.UniqueID
-type UniqueID = typeutil.UniqueID
 
 const (
 	DefaultBackupYaml = "backup.yaml"
@@ -52,6 +48,16 @@ const (
 
 	DefaultMinioBackupBucketName = "a-bucket"
 	DefaultMinioBackupRootPath   = "backup"
+
+	DefaultStorageType = "minio"
+
+	DefaultMilvusAddress     = "localhost"
+	DefaultMilvusPort        = "19530"
+	DefaultMilvusTlsMode     = "0"
+	DefaultMilvusUser        = "root"
+	DefaultMilvusPassword    = "Milvus"
+	DefaultMilvusTLSCertPath = ""
+	DefaultMilvusServerName  = ""
 )
 
 var defaultYaml = DefaultBackupYaml
@@ -109,6 +115,10 @@ func (gp *BaseTable) initConfPath() string {
 	// check if user set conf dir through env
 	configDir, find := syscall.Getenv("MILVUSCONF")
 	if !find {
+		if _, err := os.Stat(defaultYaml); err == nil {
+			return path.Dir(defaultYaml)
+		}
+
 		runPath, err := os.Getwd()
 		if err != nil {
 			panic(err)
@@ -131,6 +141,7 @@ func (gp *BaseTable) loadFromYaml(file string) {
 
 func (gp *BaseTable) tryLoadFromEnv() {
 	gp.loadMinioConfig()
+	gp.loadMilvusConfig()
 }
 
 // Load loads an object with @key.
@@ -174,7 +185,7 @@ func (gp *BaseTable) LoadRange(key, endKey string, limit int) ([]string, []strin
 
 func (gp *BaseTable) LoadYaml(fileName string) error {
 	config := viper.New()
-	configFile := gp.configDir + fileName
+	configFile := fmt.Sprintf("%s/%s", strings.TrimRight(gp.configDir, "/"), path.Base(fileName))
 	if _, err := os.Stat(configFile); err != nil {
 		panic("cannot access config file: " + configFile)
 	}
@@ -356,7 +367,7 @@ func (gp *BaseTable) InitLogCfg() {
 	gp.Log = log.Config{}
 	format := gp.LoadWithDefault("log.format", "text")
 	gp.Log.Format = format
-	level := gp.LoadWithDefault("log.level", "debug")
+	level := gp.LoadWithDefault("log.level", "info")
 	gp.Log.Level = level
 	gp.Log.Console = gp.ParseBool("log.console", false)
 	gp.Log.File.Filename = gp.LoadWithDefault("log.file.rootPath", "backup.log")
@@ -399,46 +410,139 @@ func (gp *BaseTable) SetLogger() {
 
 func (gp *BaseTable) loadMinioConfig() {
 	minioAddress := os.Getenv("MINIO_ADDRESS")
-	if minioAddress == "" {
-		minioHost := gp.LoadWithDefault("minio.address", DefaultMinioAddress)
-		port := gp.LoadWithDefault("minio.port", DefaultMinioPort)
-		minioAddress = minioHost + ":" + port
+	if minioAddress != "" {
+		_ = gp.Save("minio.address", minioAddress)
 	}
-	gp.Save("_MinioAddress", minioAddress)
+
+	minioPort := os.Getenv("MINIO_PORT")
+	if minioPort != "" {
+		_ = gp.Save("minio.port", minioPort)
+	}
 
 	minioAccessKey := os.Getenv("MINIO_ACCESS_KEY")
-	if minioAccessKey == "" {
-		minioAccessKey = gp.LoadWithDefault("minio.accessKeyID", DefaultMinioAccessKey)
+	if minioAccessKey != "" {
+		_ = gp.Save("minio.accessKeyID", minioAccessKey)
 	}
-	gp.Save("_MinioAccessKeyID", minioAccessKey)
 
 	minioSecretKey := os.Getenv("MINIO_SECRET_KEY")
-	if minioSecretKey == "" {
-		minioSecretKey = gp.LoadWithDefault("minio.secretAccessKey", DefaultMinioSecretAccessKey)
+	if minioSecretKey != "" {
+		_ = gp.Save("minio.secretAccessKey", minioSecretKey)
 	}
-	gp.Save("_MinioSecretAccessKey", minioSecretKey)
 
 	minioUseSSL := os.Getenv("MINIO_USE_SSL")
-	if minioUseSSL == "" {
-		minioUseSSL = gp.LoadWithDefault("minio.useSSL", DefaultMinioUseSSL)
+	if minioUseSSL != "" {
+		_ = gp.Save("minio.useSSL", minioUseSSL)
 	}
-	gp.Save("_MinioUseSSL", minioUseSSL)
 
 	minioBucketName := os.Getenv("MINIO_BUCKET_NAME")
-	if minioBucketName == "" {
-		minioBucketName = gp.LoadWithDefault("minio.bucketName", DefaultMinioBucketName)
+	if minioBucketName != "" {
+		_ = gp.Save("minio.bucketName", minioBucketName)
 	}
-	gp.Save("_MinioBucketName", minioBucketName)
 
 	minioUseIAM := os.Getenv("MINIO_USE_IAM")
-	if minioUseIAM == "" {
-		minioUseIAM = gp.LoadWithDefault("minio.useIAM", DefaultMinioUseIAM)
+	if minioUseIAM != "" {
+		_ = gp.Save("minio.useIAM", minioUseIAM)
 	}
-	gp.Save("_MinioUseIAM", minioUseIAM)
 
 	minioIAMEndpoint := os.Getenv("MINIO_IAM_ENDPOINT")
-	if minioIAMEndpoint == "" {
-		minioIAMEndpoint = gp.LoadWithDefault("minio.iamEndpoint", DefaultMinioIAMEndpoint)
+	if minioIAMEndpoint != "" {
+		_ = gp.Save("minio.iamEndpoint", minioIAMEndpoint)
 	}
-	gp.Save("_MinioIAMEndpoint", minioIAMEndpoint)
+
+	minioRootPath := os.Getenv("MINIO_ROOT_PATH")
+	if minioRootPath != "" {
+		_ = gp.Save("minio.rootPath", minioRootPath)
+	}
+
+	minioBackupBucketName := os.Getenv("MINIO_BACKUP_BUCKET_NAME")
+	if minioBackupBucketName != "" {
+		_ = gp.Save("minio.backupBucketName", minioBackupBucketName)
+	}
+
+	minioBackupRootPath := os.Getenv("MINIO_BACKUP_ROOT_PATH")
+	if minioBackupRootPath != "" {
+		_ = gp.Save("minio.backupRootPath", minioBackupRootPath)
+	}
+
+	minioBackupAddress := os.Getenv("MINIO_BACKUP_ADDRESS")
+	if minioBackupAddress != "" {
+		_ = gp.Save("minio.backupAddress", minioBackupAddress)
+	}
+
+	minioBackupPort := os.Getenv("MINIO_BACKUP_PORT")
+	if minioBackupPort != "" {
+		_ = gp.Save("minio.backupPort", minioBackupPort)
+	}
+
+	minioBackupAccessKey := os.Getenv("MINIO_BACKUP_ACCESS_KEY")
+	if minioBackupAccessKey != "" {
+		_ = gp.Save("minio.backupAccessKeyID", minioBackupAccessKey)
+	}
+
+	minioBackupSecretKey := os.Getenv("MINIO_BACKUP_SECRET_KEY")
+	if minioBackupSecretKey != "" {
+		_ = gp.Save("minio.backupSecretAccessKey", minioBackupSecretKey)
+	}
+
+	minioBackupUseSSL := os.Getenv("MINIO_BACKUP_USE_SSL")
+	if minioBackupUseSSL != "" {
+		_ = gp.Save("minio.backupUseSSL", minioBackupUseSSL)
+	}
+
+	minioBackupUseIAM := os.Getenv("MINIO_BACKUP_USE_IAM")
+	if minioBackupUseIAM != "" {
+		_ = gp.Save("minio.backupUseIAM", minioBackupUseIAM)
+	}
+
+	minioBackupIAMEndpoint := os.Getenv("MINIO_BACKUP_IAM_ENDPOINT")
+	if minioBackupIAMEndpoint != "" {
+		_ = gp.Save("minio.backupIamEndpoint", minioBackupIAMEndpoint)
+	}
+}
+
+func (gp *BaseTable) loadMilvusConfig() {
+	milvusAddress := os.Getenv("MILVUS_ADDRESS")
+	if milvusAddress != "" {
+		_ = gp.Save("milvus.address", milvusAddress)
+	}
+
+	milvusPort := os.Getenv("MILVUS_PORT")
+	if milvusPort != "" {
+		_ = gp.Save("milvus.port", milvusPort)
+	}
+
+	milvusTlsMode := os.Getenv("MILVUS_TLS_MODE")
+	if milvusTlsMode != "" {
+		_ = gp.Save("milvus.tlsMode", milvusTlsMode)
+	}
+
+	milvusUser := os.Getenv("MILVUS_USER")
+	if milvusUser != "" {
+		_ = gp.Save("milvus.user", milvusUser)
+	}
+
+	milvusPassword := os.Getenv("MILVUS_PASSWORD")
+	if milvusPassword != "" {
+		_ = gp.Save("milvus.password", milvusPassword)
+	}
+
+	milvusCACertPath := os.Getenv("MILVUS_CA_CERT_PATH")
+	if milvusCACertPath != "" {
+		_ = gp.Save("milvus.caCertPath", milvusCACertPath)
+	}
+
+	milvusServerName := os.Getenv("MILVUS_SERVER_NAME")
+	if milvusServerName != "" {
+		_ = gp.Save("milvus.serverName", milvusServerName)
+	}
+
+	milvusMtlsCertPath := os.Getenv("MILVUS_MTLS_CERT_PATH")
+	if milvusMtlsCertPath != "" {
+		_ = gp.Save("milvus.mtlsCertPath", milvusMtlsCertPath)
+	}
+
+	milvusMtlsKeyPath := os.Getenv("MILVUS_MTLS_KEY_PATH")
+	if milvusMtlsKeyPath != "" {
+		_ = gp.Save("milvus.mtlsKeyPath", milvusMtlsKeyPath)
+	}
 }

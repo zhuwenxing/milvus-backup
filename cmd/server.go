@@ -3,10 +3,18 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
+	"strconv"
 
 	"github.com/spf13/cobra"
+
 	"github.com/zilliztech/milvus-backup/core"
 	"github.com/zilliztech/milvus-backup/core/paramtable"
+)
+
+const (
+	DefaultServerPort = "8080"
+	ServerPortEnvKey  = "SERVER_PORT"
 )
 
 var (
@@ -24,7 +32,7 @@ var serverCmd = &cobra.Command{
 		params.Init()
 
 		context := context.Background()
-		server, err := core.NewServer(context, params, core.Port(port))
+		server, err := core.NewServer(context, &params, core.Port(port))
 		if err != nil {
 			fmt.Errorf("fail to create backup server, %s", err.Error())
 		}
@@ -34,7 +42,12 @@ var serverCmd = &cobra.Command{
 }
 
 func init() {
-	serverCmd.Flags().StringVarP(&port, "port", "p", "8080", "Port to listen")
+	serverPort := os.Getenv(ServerPortEnvKey)
+	_, err := strconv.Atoi(serverPort)
+	if err != nil {
+		serverPort = DefaultServerPort
+	}
+	serverCmd.Flags().StringVarP(&port, "port", "p", serverPort, "Port to listen")
 
 	rootCmd.AddCommand(serverCmd)
 }
