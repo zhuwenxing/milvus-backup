@@ -1,6 +1,12 @@
 filters:
-  "*":
+  ".*":
     reviewers:
-      - wayblink
+      - huanghaoyuanhhy
+      - zhuwenxing
+      - lentitude2tk
+      - Thomas-HuWei
     approvers:
-      - wayblink
+      - huanghaoyuanhhy
+      - zhuwenxing
+      - lentitude2tk
+      - Thomas-HuWei

@@ -1,7 +1,7 @@
 pull_request_rules:
   - name: Add needs-dco label when DCO check failed
     conditions:
-      - base=master
+      - base=main
       - -status-success=DCO
     actions:
       label:
@@ -11,11 +11,11 @@ pull_request_rules:
           - needs-dco
       comment:
         message: |
-          @{{author}} Thanks for your contribution. Please submit with DCO, see the contributing guide https://github.com/milvus-io/milvus/blob/master/CONTRIBUTING.md#developer-certificate-of-origin-dco.
+          @{{author}} Thanks for your contribution. Please submit with DCO, see the contributing guide https://github.com/milvus-io/milvus/blob/main/CONTRIBUTING.md#developer-certificate-of-origin-dco.
 
   - name: Add dco-passed label when DCO check passed
     conditions:
-      - base=master
+      - base=main
       - status-success=DCO
     actions:
       label:
@@ -24,18 +24,24 @@ pull_request_rules:
         add:
           - dco-passed
 
-  - name: Test passed for code changed-master
+  - name: Test passed for code changed-main
     conditions:
-      - base=master
-      - "status-success=test-backup-restore-cli (docker-compose, standalone, standalone)"
-      - "status-success=test-backup-restore-cli (docker-compose, standalone, cluster)"
-      - "status-success=test-backup-restore-cli (docker-compose, cluster, standalone)"
-      - "status-success=test-backup-restore-cli (docker-compose, cluster, cluster)"
-      - "status-success=test-backup-restore-api (docker-compose, standalone)"
-      - "status-success=test-backup-restore-api (docker-compose, cluster)"
-      - "status-success=test-backup-restore-api (helm, standalone)"
-      # - "status-success=codecov/patch"
-      # - "status-success=codecov/project"
+      - check-success=Unit test go
+      - check-success=Backup and restore cross version (docker-compose, standalone, standalone, 2.4-latest, master-latest)
+      - check-success=Backup and restore cross version (docker-compose, standalone, standalone, 2.4-latest, 2.5-latest)
+      - check-success=Backup and restore cross version (docker-compose, standalone, standalone, 2.5-latest, master-latest)
+      - check-success=Backup and restore after upgrade (docker-compose, standalone, standalone, 2.4-latest, master-latest)
+      - check-success=Backup and restore after upgrade (docker-compose, standalone, standalone, 2.4-latest, 2.5-latest)
+      - check-success=Backup and restore after upgrade (docker-compose, standalone, standalone, 2.5-latest, master-latest)
+      - check-success=Backup and restore cli (docker-compose, standalone, standalone, master-latest)
+      - check-success=Backup and restore with rbac config (helm, standalone, master-latest)
+      - check-success=Backup and restore api (docker-compose, standalone, master-latest, L0)
+      - check-success=Backup and restore api (docker-compose, standalone, master-latest, L1)
+      - check-success=Backup and restore api (docker-compose, standalone, master-latest, L2)
+      - check-success=Backup and restore api (docker-compose, standalone, master-latest, MASTER)
+      - check-success=Backup and restore api (docker-compose, standalone, 2.5-latest, L0)
+      - check-success=Backup and restore api (docker-compose, standalone, 2.5-latest, L1)
+      - check-success=Backup and restore api (docker-compose, standalone, 2.5-latest, L2)
     actions:
       label:
         add:
@@ -43,7 +49,7 @@ pull_request_rules:
 
   - name: Test passed for non-code changed
     conditions:
-      - base=master
+      - base=main
       - or:
         - -files~=^(?!.*\.(md)).*$
         - -files~=^(?!docs\/).+
@@ -55,16 +61,27 @@ pull_request_rules:
 
   - name: Test passed for mergify changed
     conditions:
-      - base=master
+      - base=main
       - -files~=^(?!\.github\/mergify\.yml).*$
     actions:
       label:
         add:
           - ci-passed
 
+  - name: Add kind/improvement tag for dependabot's PR
+    conditions:
+      - base=main
+      - author=dependabot[bot]
+    actions:
+      label:
+        add:
+          - kind/improvement
+        remove:
+          - do-not-merge/missing-related-issue
+
   - name: Blocking PR if missing a related issue or PR doesn't have kind/improvement label
     conditions:
-      - base=master
+      - base=main
       - and:
         - -body~=\#[0-9]{1,6}(\s+|$)
         - -body~=https://github.com/zilliztech/milvus-backup/issues/[0-9]{1,6}(\s+|$)
@@ -81,12 +98,12 @@ pull_request_rules:
     conditions:
       - or:
         - and:
-          - base=master
+          - base=main
           - or:
             - body~=\#[0-9]{1,6}(\s+|$)
             - body~=https://github.com/zilliztech/milvus-backup/issues/[0-9]{1,6}(\s+|$)
         - and:
-          - base=master
+          - base=main
           - label=kind/improvement
     actions:
       label:
@@ -95,26 +112,35 @@ pull_request_rules:
 
   - name: Dismiss block label if automated create PR
     conditions:
-      - base=master
+      - base=main
       - title~=\[automated\]
     actions:
       label:
         remove:
           - do-not-merge/missing-related-issue
 
-  - name: Remove ci-passed label when status for code checker or ut  is not success-master
+  - name: Remove ci-passed label when status for code checker or ut  is not success-main
     conditions:
       - label!=manual-pass
-      - base=master
+      - base=main
       - files~=^(?=.*((\.(go|h|cpp)|CMakeLists.txt))).*$
       - or:
-        - "status-success!=test-backup-restore-cli (docker-compose, standalone, standalone)"
-        - "status-success!=test-backup-restore-cli (docker-compose, standalone, cluster)"
-        - "status-success!=test-backup-restore-cli (docker-compose, cluster, standalone)"
-        - "status-success!=test-backup-restore-cli (docker-compose, cluster, cluster)"
-        - "status-success!=test-backup-restore-api (docker-compose, standalone)"
-        - "status-success!=test-backup-restore-api (docker-compose, cluster)"
-        - "status-success!=test-backup-restore-api (helm, standalone)"
+        - check-success!=Unit test go
+        - check-success!=Backup and restore cross version (docker-compose, standalone, standalone, 2.4-latest, master-latest)
+        - check-success!=Backup and restore cross version (docker-compose, standalone, standalone, 2.4-latest, 2.5-latest)
+        - check-success!=Backup and restore cross version (docker-compose, standalone, standalone, 2.5-latest, master-latest)
+        - check-success!=Backup and restore after upgrade (docker-compose, standalone, standalone, 2.4-latest, master-latest)
+        - check-success!=Backup and restore after upgrade (docker-compose, standalone, standalone, 2.4-latest, 2.5-latest)
+        - check-success!=Backup and restore after upgrade (docker-compose, standalone, standalone, 2.5-latest, master-latest)
+        - check-success!=Backup and restore cli (docker-compose, standalone, standalone, master-latest)
+        - check-success!=Backup and restore with rbac config (helm, standalone, master-latest)
+        - check-success!=Backup and restore api (docker-compose, standalone, master-latest, L0)
+        - check-success!=Backup and restore api (docker-compose, standalone, master-latest, L1)
+        - check-success!=Backup and restore api (docker-compose, standalone, master-latest, L2)
+        - check-success!=Backup and restore api (docker-compose, standalone, master-latest, MASTER)
+        - check-success!=Backup and restore api (docker-compose, standalone, 2.5-latest, L0)
+        - check-success!=Backup and restore api (docker-compose, standalone, 2.5-latest, L1)
+        - check-success!=Backup and restore api (docker-compose, standalone, 2.5-latest, L2)
     actions:
       label:
         remove:
